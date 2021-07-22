@@ -3,8 +3,8 @@
 
 # Define the number of master and worker nodes
 # If this number is changed, remember to update setup-hosts.sh script with the new hosts IP details in /etc/hosts of each VM.
-NUM_MASTER_NODE = 3
-NUM_WORKER_NODE = 2
+NUM_MASTER_NODE = 1 
+NUM_WORKER_NODE = 1
 
 IP_NW = "192.168.66."
 MASTER_IP_START = 1
@@ -63,7 +63,7 @@ Vagrant.configure("2") do |config|
             vb.cpus = 2
         end
         node.vm.hostname = "controlplane0#{i}"
-        node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
+        node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START}" + "#{i}"
         node.vm.network "forwarded_port", guest: 22, host: "#{2710 + i}"
 
         node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
@@ -85,7 +85,7 @@ Vagrant.configure("2") do |config|
             vb.cpus = 2
         end
         node.vm.hostname = "node0#{i}"
-        node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START + i}"
+        node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START}" + "#{i}"
                 node.vm.network "forwarded_port", guest: 22, host: "#{2720 + i}"
 
         node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
