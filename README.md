@@ -18,7 +18,7 @@ Uses Vagrant and ubuntu.
 По умолчанию он настроен на создание 2 мастеров, 1 воркера и 1 лоадбаленсера.
 
 ```
-https://github.com/rotoro-cloud/kubeadm-cluster.git
+git clone https://github.com/rotoro-cloud/kubeadm-cluster.git
 cd kubeadm-cluster
 vagrant up
 ```
