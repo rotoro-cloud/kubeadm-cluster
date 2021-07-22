@@ -3,7 +3,7 @@
 
 # Define the number of master and worker nodes
 # If this number is changed, remember to update setup-hosts.sh script with the new hosts IP details in /etc/hosts of each VM.
-NUM_MASTER_NODE = 1
+NUM_MASTER_NODE = 3
 NUM_WORKER_NODE = 2
 
 IP_NW = "192.168.66."
@@ -55,14 +55,14 @@ Vagrant.configure("2") do |config|
 
   # Provision Master Nodes
   (1..NUM_MASTER_NODE).each do |i|
-      config.vm.define "kubemaster" do |node|
+      config.vm.define "controlplane0#{i}" do |node|
         # Name shown in the GUI
         node.vm.provider "virtualbox" do |vb|
-            vb.name = "kubemaster"
+            vb.name = "controlplane0#{i}"
             vb.memory = 2048
             vb.cpus = 2
         end
-        node.vm.hostname = "kubemaster"
+        node.vm.hostname = "controlplane0#{i}"
         node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
         node.vm.network "forwarded_port", guest: 22, host: "#{2710 + i}"
 
@@ -78,13 +78,13 @@ Vagrant.configure("2") do |config|
 
   # Provision Worker Nodes
   (1..NUM_WORKER_NODE).each do |i|
-    config.vm.define "kubenode0#{i}" do |node|
+    config.vm.define "node0#{i}" do |node|
         node.vm.provider "virtualbox" do |vb|
-            vb.name = "kubenode0#{i}"
+            vb.name = "node0#{i}"
             vb.memory = 2048
             vb.cpus = 2
         end
-        node.vm.hostname = "kubenode0#{i}"
+        node.vm.hostname = "node0#{i}"
         node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START + i}"
                 node.vm.network "forwarded_port", guest: 22, host: "#{2720 + i}"
 
