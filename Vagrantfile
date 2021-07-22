@@ -52,6 +52,29 @@ Vagrant.configure("2") do |config|
   #
   # View the documentation for the provider you are using for more
   # information on available options.
+  
+  # Provision Load Balancer Node
+  
+  config.vm.define "lb" do |node|
+
+    node.vm.provider "virtualbox" do |vb|
+      vb.name = "lb"
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+    node.vm.hostname = "lb"
+    node.vm.network :private_network, ip: IP_NW + "#{LB_IP_START}"
+    node.vm.network "forwarded_port", guest: 22, host: "2730"
+
+    node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
+      s.args = ["enp0s8"]
+    end
+
+    node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
+
+  end
+
+  
 
   # Provision Master Nodes
   (1..NUM_MASTER_NODE).each do |i|
@@ -64,7 +87,7 @@ Vagrant.configure("2") do |config|
         end
         node.vm.hostname = "controlplane0#{i}"
         node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START}" + "#{i}"
-        node.vm.network "forwarded_port", guest: 22, host: "#{2710 + i}"
+        node.vm.network "forwarded_port", guest: 22, host: 2710 + "#{i}"
 
         node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
           s.args = ["enp0s8"]
@@ -86,7 +109,7 @@ Vagrant.configure("2") do |config|
         end
         node.vm.hostname = "node0#{i}"
         node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START}" + "#{i}"
-                node.vm.network "forwarded_port", guest: 22, host: "#{2720 + i}"
+                node.vm.network "forwarded_port", guest: 22, host: 2720 + "#{i}"
 
         node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
           s.args = ["enp0s8"]
