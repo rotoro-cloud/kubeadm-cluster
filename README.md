@@ -112,8 +112,8 @@ sudo usermod -aG docker vagrant
 
 Добавим нужные утилиты, хотя `docker` уже их должен был добавить:
 ```
-apt-get update
-apt-get install -y apt-transport-https ca-certificates curl
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
 ```
 Добавим ключи репозитория `google` и сам репо:
 ```
