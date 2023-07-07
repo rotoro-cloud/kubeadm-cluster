@@ -1,15 +1,18 @@
+ENV['VAGRANT_SERVER_URL'] ='https://vagrant.elab.pro'
+
 # -*- mode: ruby -*-
 # vi:set ft=ruby sw=2 ts=2 sts=2:
 
 # Define the number of master and worker nodes
 # If this number is changed, remember to update setup-hosts.sh script with the new hosts IP details in /etc/hosts of each VM.
 NUM_MASTER_NODE = 2 
-NUM_WORKER_NODE = 1
+NUM_WORKER_NODE = 2
 
-IP_NW = "192.168.66."
+IP_NW = "192.168.77."
 MASTER_IP_START = 1
 NODE_IP_START = 2
 LB_IP_START = 30
+
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -23,7 +26,7 @@ Vagrant.configure("2") do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
   # config.vm.box = "base"
-  config.vm.box = "ubuntu/bionic64"
+  config.vm.box = "ubuntu/jammy64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -55,26 +58,27 @@ Vagrant.configure("2") do |config|
   
   # Provision Load Balancer Node
   
-  config.vm.define "lb" do |node|
+  if NUM_MASTER_NODE > 1 
+    config.vm.define "lb" do |node|
 
-    node.vm.provider "virtualbox" do |vb|
-      vb.name = "lb"
-      vb.memory = 1024
-      vb.cpus = 1
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "lb"
+        vb.memory = 2048
+        vb.cpus = 2
+
+      end
+
+      node.vm.hostname = "lb"
+      node.vm.network :private_network, ip: IP_NW + "#{LB_IP_START}"
+      node.vm.network "forwarded_port", guest: 22, host: "2730"
+
+      node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/setup-hosts.sh" do |s|
+        s.args = ["enp0s8"]
+      end
+
+      node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
     end
-    node.vm.hostname = "lb"
-    node.vm.network :private_network, ip: IP_NW + "#{LB_IP_START}"
-    node.vm.network "forwarded_port", guest: 22, host: "2730"
-
-    node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
-      s.args = ["enp0s8"]
-    end
-
-    node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
-
   end
-
-  
 
   # Provision Master Nodes
   (1..NUM_MASTER_NODE).each do |i|
@@ -89,7 +93,7 @@ Vagrant.configure("2") do |config|
         node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START}" + "#{i}"
         node.vm.network "forwarded_port", guest: 22, host: "271#{i}"
 
-        node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
+        node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/setup-hosts.sh" do |s|
           s.args = ["enp0s8"]
         end
 
@@ -111,7 +115,7 @@ Vagrant.configure("2") do |config|
         node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START}" + "#{i}"
                 node.vm.network "forwarded_port", guest: 22, host: "272#{i}"
 
-        node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
+        node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/setup-hosts.sh" do |s|
           s.args = ["enp0s8"]
         end
 
